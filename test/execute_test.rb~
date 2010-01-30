@@ -1,8 +1,0 @@
-require File.join(File.dirname(__FILE__), "test_helpers.rb")
-require 'execute'
-
-class TestExecute < Test::Unit::TestCase
-  def test_must_write_tests_for_execute
-    true or flunk "TODO: write tests for execute"
-  end
-end
