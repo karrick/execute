@@ -1,0 +1,13 @@
+Execute library allows invoking command line programs.
+
+* takes either a String or Array of Strings specifying commands to execute.
+
+* optionally takes hash with host key, specifying host to execute command on, using SSH.
+
+* optionally takes hash with stdin key, specifying standard input for program.
+
+* returns hash with standard output, standard error, and the status value.
+
+* allows specifying which status values indicate an error.
+
+* allows specifying an error message to use to create a RuntimeError when status value indicates an error.
