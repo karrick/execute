@@ -22,7 +22,7 @@ spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
   s.name              = "execute"
-  s.version           = "0.0.1"
+  s.version           = "0.0.3"
   s.summary           = "Execute shell commands on remote hosts"
   s.author            = "Karrick S. McDermott"
   s.email             = "karrick@karrick.net"

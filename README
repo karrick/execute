@@ -11,3 +11,7 @@ Execute library allows invoking command line programs.
 * allows specifying which status values indicate an error.
 
 * allows specifying an error message to use to create a RuntimeError when status value indicates an error.
+
+* run  <-- never throws an exception
+
+* run! <-- throws exception if fail

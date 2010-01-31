@@ -8,7 +8,6 @@ module Execute
   # PURPOSE:  Execute a command
   # INPUT:    Shell command; Hash of options
   #             :host => Host upon which this command should be invoked
-  #             :status => true | Fixnum | Array of Fixnum
   #             :stdin => Array or String to be piped to command's standard input
   # OUTPUT:   Hash with keys {:status, :stdout, :stderr}
   # NOTE:     Open4::spawn has great error handling, however, if process exit status
@@ -17,27 +16,17 @@ module Execute
   # NOTE:     This method uses Open4::spawn but tells it to not raise
   #           an Open4::SpawnError for any reason.  It simply returns the
   #           :status, :stdout, and :stderr in a Hash.
-  def shell (cmd, options={})
-    # validate: cmd
-    unless cmd.kind_of?(String) or (cmd.kind_of?(Array) and cmd.all? { |e| e.kind_of?(String) })
-      raise ArgumentError.new("cmd must be a String, or an Array of Strings")
-    else
-      # Concatenate list of commands if more than one.
-      # NOTE:  Join with double-ampersand to ensure execution halts on error
-      cmd = Array(cmd).join(' && ')
-    end
-
-    # validate: options
-    unless options.kind_of?(Hash)
-      raise ArgumentError.new("options must be a Hash")
-    end
+  def run (cmd, options={})
+    raise ArgumentError.new("cmd must be a String") unless cmd.kind_of?(String)
+    raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:host, :stdin].include?(x)}
 
     # execute via ssh if not this computer
     unless options[:host].nil? or options[:host].empty? or options[:host] == 'localhost'
       cmd = convert_to_ssh_command(cmd, options[:host])
     end
 
-    #### Prepare standard IO
+    # Prepare standard IO
     stdout, stderr = '',''
     stdin = options[:stdin]
 
@@ -54,35 +43,27 @@ module Execute
   #             :status => true | Fixnum | Array of Fixnum
   #             :stdin => Array or String to be piped to command's standard input
   # OUTPUT:   Hash with keys {:status, :stdout, :stderr}
-  def protected_shell (cmd, options={})
-    # validate: cmd
-    unless cmd.kind_of?(String) or (cmd.kind_of?(Array) and cmd.all? { |e| e.kind_of?(String) })
-      raise ArgumentError.new("cmd must be a String, or an Array of Strings")
-    else
-      # Concatenate list of commands if more than one.
-      # NOTE:  Join with double-ampersand to ensure execution halts on error
-      cmd = Array(cmd).join(' && ')
-    end
-
-    # validate: options
-    unless options.kind_of?(Hash)
-      raise ArgumentError.new("options must be a Hash")
-    end
+  def run! (cmd, options={})
+    raise ArgumentError.new("cmd must be a String") unless cmd.kind_of?(String)
+    raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:host, :stdin, :emsg, :status].include?(x)}
 
     # prepare exit status handling
-    valid_exit_values = options[:status] || Array(0)
+    valid_exit_values = options.delete(:status) || Array(0)
     unless valid_exit_values == true or valid_exit_values.kind_of?(Array)
       valid_exit_values = Array(valid_exit_values)
     end
 
+    error_message = options.delete(:emsg)
+
     # delegate command to execute method
-    result = execute(cmd, options)
+    result = run(cmd, options)
 
     # check return status code
     exitstatus = result[:status]
     unless valid_exit_values == true or valid_exit_values.include?(exitstatus)
-      options[:emsg] ||= cmd      # populate error message with command string if not defined
-      raise RuntimeError.new("#{options[:emsg]}#{$/}#{result[:stderr]}#{$/}")
+      error_message ||= cmd      # populate error message with command string if not defined
+      raise RuntimeError.new("#{error_message}#{$/}#{result[:stderr]}#{$/}")
     end
     result
   end
