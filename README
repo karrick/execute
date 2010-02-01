@@ -15,3 +15,7 @@ Execute library allows invoking command line programs.
 * run  <-- never throws an exception
 
 * run! <-- throws exception if fail
+
+TODO
+
+* possible bug execute.rb line 65 when raising new RuntimeError (cannot converl nil to String).

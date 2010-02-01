@@ -11,7 +11,14 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-task :default => [:test, :clean, :package]
+task :default => [:test, :clean, :perms, :package]
+
+task :perms do
+  system(%Q[find #{File.dirname(__FILE__)} -type d -exec chmod 755 {} \\;])
+  system(%Q[find #{File.dirname(__FILE__)} -type f -exec chmod 644 {} \\;])
+  bin = File.join(File.dirname(__FILE__),'bin')
+  system(%Q[find #{bin} -type f -exec chmod 755 {} \\;]) if File.directory?(bin)
+end
 
 # This builds the actual gem. For details of what all these options
 # mean, and other ones you can add, check the documentation here:
@@ -22,7 +29,7 @@ spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
   s.name              = "execute"
-  s.version           = "0.0.3"
+  s.version           = "0.0.4"
   s.summary           = "Execute shell commands on remote hosts"
   s.author            = "Karrick S. McDermott"
   s.email             = "karrick@karrick.net"

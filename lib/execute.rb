@@ -54,7 +54,7 @@ module Execute
       valid_exit_values = Array(valid_exit_values)
     end
 
-    error_message = options.delete(:emsg)
+    error_message = options.delete(:emsg) || cmd # populate error message with command string if not defined
 
     # delegate command to execute method
     result = run(cmd, options)
@@ -62,7 +62,6 @@ module Execute
     # check return status code
     exitstatus = result[:status]
     unless valid_exit_values == true or valid_exit_values.include?(exitstatus)
-      error_message ||= cmd      # populate error message with command string if not defined
       raise RuntimeError.new("#{error_message}#{$/}#{result[:stderr]}#{$/}")
     end
     result
