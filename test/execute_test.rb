@@ -1,7 +1,22 @@
+# -*- compile-command: "rake test"; -*-
+
 require File.join(File.dirname(__FILE__), "test_helpers.rb")
 require 'execute'
 
 class TestExecute < Test::Unit::TestCase
+  def setup
+    # find a remote host we can use for test logins
+    %w[clay localhost].each do |host|
+      begin
+        Execute.run!('echo', :host => host)
+        @remote_test_host = host
+        break
+      rescue
+        retry
+      end
+    end
+  end
+
   def test_raise_argument_error_if_cmd_not_string
     assert_raise(ArgumentError) do
       Execute.run({})
@@ -63,6 +78,26 @@ class TestExecute < Test::Unit::TestCase
   def test_standard_input_used
     input = ['line 1', 'line 2'].join($/)
     assert_equal(input, Execute.run('cat -', :stdin => input)[:stdout])
+  end
+
+  def test_remote_host_return_value
+    if @remote_test_host.nil? or @remote_test_host.empty?
+      $stderr.puts("could not find a remote host to test; skipping remote host tests.")
+    else
+      result = Execute.run!('true', :host => @remote_test_host)
+      assert_equal(0, result[:status], "return status error")
+    end
+  end
+
+  def test_remote_host_standard_output
+    if @remote_test_host.nil? or @remote_test_host.empty?
+      $stderr.puts("could not find a remote host to test; skipping remote host tests.")
+    else
+      result = Execute.run!('ls', :host => @remote_test_host)
+      assert_equal(0, result[:status], "return status error")
+      assert(result[:stdout].split($/).length > 0, "no output lines")
+      $stderr.puts(result[:stdout])
+    end
   end
 
 end
