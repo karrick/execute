@@ -29,12 +29,11 @@ spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
   s.name              = "execute"
-  s.version           = "0.0.4"
+  s.version           = "0.0.5"
   s.summary           = "Execute shell commands on remote hosts"
   s.author            = "Karrick S. McDermott"
   s.email             = "karrick@karrick.net"
   s.homepage          = "http://karrick.net"
-  s.description       = "Execute library allows invoking command line programs."
 
   s.has_rdoc          = true
   # You should probably have a README of some kind. Change the filename
