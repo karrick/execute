@@ -6,7 +6,6 @@ require 'execute'
 class TestExecute < Test::Unit::TestCase
 
   REMOTE_HOSTS = %w[soma]
-  REMOTE_USER = 'e3'
   TEST_CMD = "ls -hlF"
 
   def setup
@@ -20,6 +19,7 @@ class TestExecute < Test::Unit::TestCase
         retry                   # with next host in list
       end
     end
+    @remote_user = 'e3'
   end
 
   ################
@@ -104,9 +104,9 @@ class TestExecute < Test::Unit::TestCase
   end
 
   def test_change_host_normal
-    host = "bogus"
+    host = @remote_test_host
     result = Execute.change_host(TEST_CMD, host)
-    [/^ssh -Tq/, /-o PasswordAuthentication=no/,
+    [/ssh -Tq/, /-o PasswordAuthentication=no/,
      /-o StrictHostKeyChecking=no/, /-o ConnectTimeout=2/,
      Regexp.new("#{host}"), Regexp.new(%Q["#{TEST_CMD}"])].each do |re|
       assert_match(re, result, "failed to change host")
@@ -125,15 +125,37 @@ class TestExecute < Test::Unit::TestCase
     assert_equal(TEST_CMD, Execute.change_user(TEST_CMD, ""), "should not modify command if user is empty string")
   end
 
+  ################
+  # BEHAVIOR TESTS -- CHANGE HOST AND / OR USER
+  ################
+
   def test_change_user_sets_user
-    host = @remote_test_host ; user = REMOTE_USER
+    host = @remote_test_host ; user = @remote_user
     assert_equal(user, Execute.run!('whoami', :host => host, :user => user)[:stdout].strip,
                  "failed to change user")
   end
 
-  def test_change_user_sets_home
-    host = @remote_test_host ; user = REMOTE_USER
+  def test_change_user_sets_home_directory
+    host = @remote_test_host ; user = @remote_user
     assert_equal("/home/#{user}", Execute.run!('pwd', :host => host, :user => user)[:stdout].strip,
+                 "failed to set user's home directory")
+  end
+
+  def test_change_user_sets_home_env
+    host = @remote_test_host ; user = @remote_user
+    assert_equal("/home/#{user}", Execute.run!('echo $HOME', :host => host, :user => user)[:stdout].strip,
                  "failed to set user's HOME")
+  end
+
+  def test_change_host_actually_changes_host
+    host = @remote_test_host ; user = @remote_user
+    assert_match(%r/^#{host}/, Execute.run!('hostname', :host => host)[:stdout].strip,
+                 "failed to change host")
+  end
+
+  def test_change_host_and_user_actually_changes_host
+    host = @remote_test_host ; user = @remote_user
+    assert_match(%r/^#{host}/, Execute.run!('hostname', :host => host, :user => user)[:stdout].strip,
+                 "failed to change host")
   end
 end

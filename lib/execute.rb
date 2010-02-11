@@ -3,7 +3,8 @@ require 'open4'
 
 module Execute
 
-  USE_SUDO_SU = false
+  USE_SUDO_SU = true            # note: might not be allowed to use su in future
+  SEND_COMMAND_VIA_SSH_STDIN = false # note: method might not work if client also passes stdin
 
   ########################################
   # PURPOSE:  Execute a command
@@ -22,7 +23,7 @@ module Execute
   def Execute.run (cmd, options={})
     raise ArgumentError.new("cmd must be a String") unless cmd.kind_of?(String)
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
-    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:host, :stdin, :user].include?(x)}
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :user].include?(x)}
 
     # if user specified then modify command to execute as a different user;
     # must have sudo permissions to do this
@@ -31,6 +32,9 @@ module Execute
     # if host specified then modify command to execute on a different host;
     # must have ssh keys prepared to do this
     cmd = Execute.change_host(cmd, options.delete(:host))
+
+    # show the command if debugging
+    $stderr.puts("[#{cmd}]") if options.delete(:debug)
 
     # Prepare standard IO
     stdout, stderr = '',''
@@ -55,7 +59,7 @@ module Execute
   #           approve (or 0 if not specified).  Your program will not get the Hash in this case.
   def Execute.run! (cmd, options={})
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
-    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:host, :stdin, :emsg, :status, :user].include?(x)}
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :emsg, :status, :user].include?(x)}
 
     # prepare exit status handling
     valid_exit_values = options.delete(:status) || Array(0)
@@ -100,7 +104,13 @@ module Execute
       # NOTE:  It is very important to escape backslash character ('\') before
       #        escaping either the double quotes or the dollar sign
       #
-      %Q[ssh #{ssh_opts} #{host} "#{cmd.gsub(/\\/,%q[\\\\\\]).gsub(/\"/, %q[\"]).gsub(/\$/, %q[\$])}"]
+      if SEND_COMMAND_VIA_SSH_STDIN
+        # send client command via ssh's stdin
+        %Q[echo "#{cmd.gsub(/\\/,%q[\\\\\\]).gsub(/\"/, %q[\"]).gsub(/\$/, %q[\$])}" | ssh #{ssh_opts} #{host}]
+      else
+        # send client command on ssh's command line
+        %Q[ssh #{ssh_opts} #{host} "#{cmd.gsub(/\\/,%q[\\\\\\]).gsub(/\"/, %q[\"]).gsub(/\$/, %q[\$])}"]
+      end
     end
   end
 end
