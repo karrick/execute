@@ -5,7 +5,8 @@ require 'execute'
 
 class TestExecute < Test::Unit::TestCase
 
-  REMOTE_HOSTS = %w[]
+  REMOTE_HOSTS = %w[soma]
+  REMOTE_USER = 'e3'
   TEST_CMD = "ls -hlF"
 
   def setup
@@ -85,13 +86,13 @@ class TestExecute < Test::Unit::TestCase
     if @remote_test_host.nil?
       $stderr.puts("\ncould not find a remote host to test; skipping remote host tests.")
     else
-      assert_match(Regexp.new("#{@remote_test_host}"),
-                   Execute.run('hostname', :host => @remote_test_host))
+      re = %r/^#{@remote_test_host}/
+      assert_match(re, Execute.run!('hostname', :host => @remote_test_host)[:stdout])
     end
   end
 
   ################
-  # HELPER METHODS
+  # HELPER METHOD -- CHANGE HOST
   ################
 
   def test_change_host_nil
@@ -112,6 +113,10 @@ class TestExecute < Test::Unit::TestCase
     end
   end
 
+  ################
+  # HELPER METHOD -- CHANGE USER
+  ################
+
   def test_change_user_nil
     assert_equal(TEST_CMD, Execute.change_user(TEST_CMD, nil), "should not modify command if user is nil")
   end
@@ -120,9 +125,15 @@ class TestExecute < Test::Unit::TestCase
     assert_equal(TEST_CMD, Execute.change_user(TEST_CMD, ""), "should not modify command if user is empty string")
   end
 
-  def test_change_user_normal
-    user = "bogus"
-    re = Regexp.new(%Q/^sudo su -lc "([^"]*)" #{user}$/)
-    assert_match(re, Execute.change_user(TEST_CMD, user), "failed to change user")
+  def test_change_user_sets_user
+    host = @remote_test_host ; user = REMOTE_USER
+    assert_equal(user, Execute.run!('whoami', :host => host, :user => user)[:stdout].strip,
+                 "failed to change user")
+  end
+
+  def test_change_user_sets_home
+    host = @remote_test_host ; user = REMOTE_USER
+    assert_equal("/home/#{user}", Execute.run!('pwd', :host => host, :user => user)[:stdout].strip,
+                 "failed to set user's HOME")
   end
 end

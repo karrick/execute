@@ -3,6 +3,8 @@ require 'open4'
 
 module Execute
 
+  USE_SUDO_SU = false
+
   ########################################
   # PURPOSE:  Execute a command
   # INPUT:    Shell command; Hash of options
@@ -79,7 +81,11 @@ module Execute
     when nil, ""
       cmd
     else
-      %Q[sudo su -lc "#{cmd}" #{user}]
+      if USE_SUDO_SU
+        %Q[sudo su -lc "#{cmd}" #{user}]
+      else
+        %Q[sudo -u #{user} -H "#{cmd}"]
+      end
     end
   end
 
