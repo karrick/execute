@@ -82,15 +82,6 @@ class TestExecute < Test::Unit::TestCase
     assert_equal(Dir.pwd, Execute.run('pwd')[:stdout].strip)
   end
 
-  def test_remote_host_return_value
-    if @remote_test_host.nil?
-      $stderr.puts("\ncould not find a remote host to test; skipping remote host tests.")
-    else
-      re = %r/^#{@remote_test_host}/
-      assert_match(re, Execute.run!('hostname', :host => @remote_test_host)[:stdout])
-    end
-  end
-
   ################
   # HELPER METHOD -- CHANGE HOST
   ################
@@ -149,13 +140,13 @@ class TestExecute < Test::Unit::TestCase
 
   def test_change_host_actually_changes_host
     host = @remote_test_host ; user = @remote_user
-    assert_match(%r/^#{host}/, Execute.run!('hostname', :host => host)[:stdout].strip,
+    assert_match(%r/#{host}/, Execute.run!('hostname', :host => host)[:stdout].strip,
                  "failed to change host")
   end
 
   def test_change_host_and_user_actually_changes_host
     host = @remote_test_host ; user = @remote_user
-    assert_match(%r/^#{host}/, Execute.run!('hostname', :host => host, :user => user)[:stdout].strip,
+    assert_match(%r/#{host}/, Execute.run!('hostname', :host => host, :user => user)[:stdout].strip,
                  "failed to change host")
   end
 end
