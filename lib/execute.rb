@@ -113,4 +113,8 @@ module Execute
       end
     end
   end
+
+  def Execute.get_env_val (host, key)
+    Execute.run!(%Q[echo $#{key}], :host => host)[:stdout].strip
+  end
 end

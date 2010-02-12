@@ -13,7 +13,7 @@ class TestExecute < Test::Unit::TestCase
     REMOTE_HOSTS.each do |host|
       begin
         Execute.run!('echo', :host => host)
-        @remote_test_host = host
+        @remote_host = host
         break
       rescue
         retry                   # with next host in list
@@ -95,7 +95,7 @@ class TestExecute < Test::Unit::TestCase
   end
 
   def test_change_host_normal
-    host = @remote_test_host
+    host = @remote_host
     result = Execute.change_host(TEST_CMD, host)
     [/ssh -Tq/, /-o PasswordAuthentication=no/,
      /-o StrictHostKeyChecking=no/, /-o ConnectTimeout=2/,
@@ -121,32 +121,46 @@ class TestExecute < Test::Unit::TestCase
   ################
 
   def test_change_user_sets_user
-    host = @remote_test_host ; user = @remote_user
+    host = @remote_host ; user = @remote_user
     assert_equal(user, Execute.run!('whoami', :host => host, :user => user)[:stdout].strip,
                  "failed to change user")
   end
 
   def test_change_user_sets_home_directory
-    host = @remote_test_host ; user = @remote_user
+    host = @remote_host ; user = @remote_user
     assert_equal("/home/#{user}", Execute.run!('pwd', :host => host, :user => user)[:stdout].strip,
                  "failed to set user's home directory")
   end
 
   def test_change_user_sets_home_env
-    host = @remote_test_host ; user = @remote_user
+    host = @remote_host ; user = @remote_user
     assert_equal("/home/#{user}", Execute.run!('echo $HOME', :host => host, :user => user)[:stdout].strip,
                  "failed to set user's HOME")
   end
 
   def test_change_host_actually_changes_host
-    host = @remote_test_host ; user = @remote_user
+    host = @remote_host ; user = @remote_user
     assert_match(%r/#{host}/, Execute.run!('hostname', :host => host)[:stdout].strip,
                  "failed to change host")
   end
 
   def test_change_host_and_user_actually_changes_host
-    host = @remote_test_host ; user = @remote_user
+    host = @remote_host ; user = @remote_user
     assert_match(%r/#{host}/, Execute.run!('hostname', :host => host, :user => user)[:stdout].strip,
                  "failed to change host")
+  end
+
+  def test_get_env_val_home
+    host = @remote_host
+    assert_equal('/home/e3',
+                 Execute.get_env_val(host, 'HOME'),
+                 "failed to get remote ENV value")
+  end
+
+  def test_get_env_val_user
+    host = @remote_host
+    assert_equal(Execute.run!('whoami', :host => host)[:stdout].strip,
+                 Execute.get_env_val(host, 'USER'),
+                 "failed to get remote ENV value")
   end
 end
