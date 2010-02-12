@@ -22,6 +22,20 @@ class TestExecute < Test::Unit::TestCase
     @remote_user = 'e3'
   end
 
+  def test_run_removes_its_keys_from_options_hash
+    result = mock()
+    result.expects(:exitstatus).returns(0)
+
+    Execute.stubs(:change_user).with('pwd', 'degook').returns('pwd')
+    Execute.stubs(:change_host).with('pwd', 'garble').returns('pwd')
+
+    Open4.expects(:spawn).with('pwd', all_of(has_key(0), has_key(1), has_key(2), has_key(:status),
+                                             Not(any_of(has_key(:user), has_key(:host),
+                                                        has_key(:debug), has_key(:stdin))))).returns(result)
+
+    assert_equal({:status => 0, :stdout => "", :stderr => ""}, Execute.run('pwd', :user => 'degook', :host => 'garble'))
+  end
+
   ################
   # STATUS CODE ERROR TESTS
   ################
