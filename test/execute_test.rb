@@ -7,6 +7,7 @@ class TestExecute < Test::Unit::TestCase
 
   REMOTE_HOSTS = %w[soma]
   TEST_CMD = "ls -hlF"
+  TEST_TIMEOUT_SECONDS = 5
 
   def setup
     # find a remote host we can use for test logins
@@ -94,6 +95,10 @@ class TestExecute < Test::Unit::TestCase
 
   def test_shows_pwd
     assert_equal(Dir.pwd, Execute.run('pwd')[:stdout].strip)
+  end
+
+  def test_shows_pwd
+    assert_equal(Dir.pwd, Execute.run('pwd', :timeout => TEST_TIMEOUT_SECONDS)[:stdout].strip)
   end
 
   ################

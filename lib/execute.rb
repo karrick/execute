@@ -45,6 +45,7 @@ module Execute
 
     timeout = options.delete(:timeout)
 
+    result = nil
     if timeout
       Execute.yield_with_timeout(timeout) do
         result = Open4.spawn(cmd, options.merge({0=>stdin, 1=>stdout, 2=>stderr, :status => true}))
