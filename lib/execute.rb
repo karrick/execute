@@ -1,8 +1,11 @@
+require 'timeout'
 require 'rubygems'
 require 'open4'
+require 'system_timer'
 
 module Execute
 
+  USE_NATIVE_THREADED_TIMEOUTS = true
   USE_SUDO_SU = true            # note: might not be allowed to use su in future
   SEND_COMMAND_VIA_SSH_STDIN = false # note: method might not work if client also passes stdin
 
@@ -23,7 +26,7 @@ module Execute
   def Execute.run (cmd, options={})
     raise ArgumentError.new("cmd must be a String") unless cmd.kind_of?(String)
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
-    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :user].include?(x)}
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :timeout, :user].include?(x)}
 
     # if user specified then modify command to execute as a different user;
     # must have sudo permissions to do this
@@ -40,8 +43,17 @@ module Execute
     stdout, stderr = '',''
     stdin = options.delete(:stdin)
 
+    timeout = options.delete(:timeout)
+
+    if timeout
+      Execute.yield_with_timeout(timeout) do
+        result = Open4.spawn(cmd, options.merge({0=>stdin, 1=>stdout, 2=>stderr, :status => true}))
+      end
+    else
+      result = Open4.spawn(cmd, options.merge({0=>stdin, 1=>stdout, 2=>stderr, :status => true}))
+    end
+
     # delegate command to Open4::spawn method
-    result = Open4.spawn(cmd, options.merge({0=>stdin, 1=>stdout, 2=>stderr, :status => true}))
     {:status => result.exitstatus, :stdout => stdout, :stderr => stderr}
   end
 
@@ -59,7 +71,7 @@ module Execute
   #           approve (or 0 if not specified).  Your program will not get the Hash in this case.
   def Execute.run! (cmd, options={})
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
-    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :emsg, :status, :user].include?(x)}
+    raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :emsg, :status, :timeout, :user].include?(x)}
 
     # prepare exit status handling
     valid_exit_values = options.delete(:status) || Array(0)
@@ -116,5 +128,30 @@ module Execute
 
   def Execute.get_env_val (host, key)
     Execute.run!(%Q[echo $#{key}], :host => host)[:stdout].strip
+  end
+
+  private
+
+  def Execute.yield_with_timeout (seconds, &block)
+    if USE_NATIVE_THREADED_TIMEOUTS
+      yield_with_native_threaded_timeout(seconds, &block)
+    else
+      yield_with_green_threaded_timeout(seconds, &block)
+    end
+  end
+
+  def Execute.yield_with_native_threaded_timeout (seconds, &block)
+    SystemTimer.timeout_after(seconds) { yield }
+  end
+
+  def Execute.yield_with_green_threaded_timeout (seconds, &block)
+    # WARNING: green threads are not guaranteed to be scheduled,
+    # and the timeout might not trip in Ruby 1.8.
+    # http://ph7spot.com/musings/system-timer
+
+    # note: ignore return value of Timeout.timeout
+    rval = nil
+    Timeout.timeout(seconds) { rval = yield }
+    rval
   end
 end
