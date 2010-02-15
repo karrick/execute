@@ -29,7 +29,7 @@ spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
   s.name              = "execute"
-  s.version           = "0.0.7"
+  s.version           = "0.0.8"
   s.summary           = "Execute shell commands on remote hosts"
   s.author            = "Karrick S. McDermott"
   s.email             = "karrick@karrick.net"
@@ -47,10 +47,12 @@ spec = Gem::Specification.new do |s|
 
   # If you want to depend on other gems, add them here, along with any
   # relevant versions
+  s.add_dependency("SystemTimer", "~> 1.1.3")
   s.add_dependency("open4", "~> 1.0.1")
 
   # If your tests use any gems, include them here
-  # s.add_development_dependency("mocha") # for example
+  s.add_development_dependency("mocha") # for example
+  s.add_development_dependency("flexmock/test_unit") # for example
 
   # If you want to publish automatically to rubyforge, you'll may need
   # to tweak this, and the publishing task below too.
