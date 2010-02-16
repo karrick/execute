@@ -11,13 +11,13 @@ Rake::TestTask.new do |t|
   t.verbose = true
 end
 
-task :default => [:test, :clean, :perms, :package]
+task :default => [:test, :clean, :rdoc, :perms, :package]
 
 task :perms do
   bin = File.join(File.dirname(__FILE__),'bin')
   system(%Q[find '#{File.dirname(__FILE__)}' -type d -print0 | xargs -0 -I % chmod 755 '%'])
   system(%Q[find '#{File.dirname(__FILE__)}' -type f -print0 | xargs -0 -I % chmod 644 '%'])
-  system(%Q[find '#{bin}' -type f -print0 | xargs -0 -I % chmod 755 '%'])
+  system(%Q[find '#{bin}' -type f -print0 | xargs -0 -I % chmod 755 '%']) if File.directory?(bin)
 end
 
 # This builds the actual gem. For details of what all these options
