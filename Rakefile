@@ -14,10 +14,10 @@ end
 task :default => [:test, :clean, :perms, :package]
 
 task :perms do
-  system(%Q[find #{File.dirname(__FILE__)} -type d -exec chmod 755 {} \\;])
-  system(%Q[find #{File.dirname(__FILE__)} -type f -exec chmod 644 {} \\;])
   bin = File.join(File.dirname(__FILE__),'bin')
-  system(%Q[find #{bin} -type f -exec chmod 755 {} \\;]) if File.directory?(bin)
+  system(%Q[find '#{File.dirname(__FILE__)}' -type d -print0 | xargs -0 -I % chmod 755 '%'])
+  system(%Q[find '#{File.dirname(__FILE__)}' -type f -print0 | xargs -0 -I % chmod 644 '%'])
+  system(%Q[find '#{bin}' -type f -print0 | xargs -0 -I % chmod 755 '%'])
 end
 
 # This builds the actual gem. For details of what all these options
