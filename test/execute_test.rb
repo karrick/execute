@@ -1,4 +1,4 @@
-# -*- compile-command: "rake test"; -*-
+# -*- mode: ruby; compile-command: "cd ~/Development/execute && send pri=cs && echo 'cd /tmp/karrick/execute && rake test' | ssh -Tq pri ssh -Tq cs"; -*-
 
 require File.join(File.dirname(__FILE__), "test_helpers.rb")
 require 'execute'
@@ -13,7 +13,7 @@ class TestExecute < Test::Unit::TestCase
     # find a remote host we can use for test logins
     REMOTE_HOSTS.each do |host|
       begin
-        Execute.run!('echo', :host => host)
+        Execute.run!('echo', :host => host, :timeout => 5)
         @remote_host = host
         break
       rescue

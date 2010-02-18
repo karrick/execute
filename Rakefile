@@ -1,4 +1,4 @@
-# Rakefile -*- mode: Ruby; compile-command: "rake test"; -*-
+# -*- mode: ruby; compile-command: "cd ~/Development/execute && send pri=cs && echo 'cd /tmp/karrick/execute && rake test' | ssh -Tq pri ssh -Tq cs"; -*-
 
 require "rubygems"
 require "rake/gempackagetask"
