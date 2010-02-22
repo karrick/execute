@@ -125,34 +125,10 @@ end
 #
 # Sets sane file and directory permissions prior to packaging
 # (necessary when developer's umask is restrictive)
+#
 task :set_sane_file_permissions do
   bin = File.join(File.dirname(__FILE__),'bin')
   system(%Q[find '#{File.dirname(__FILE__)}' -type d -print0 | xargs -0 -I % chmod 755 '%'])
   system(%Q[find '#{File.dirname(__FILE__)}' -type f -print0 | xargs -0 -I % chmod 644 '%'])
   system(%Q[find '#{bin}' -type f -print0 | xargs -0 -I % chmod 755 '%']) if File.directory?(bin)
-end
-
-desc "uninstall a gem"
-task :uninstall do
-  if $remove_all_versions
-    system("gem list '#{spec.name}' -i >/dev/null && gem uninstall -a -I -x '#{spec.name}'")
-  else
-    system("gem list '#{spec.name}' -i >/dev/null && gem uninstall -v #{spec.version} -I -x '#{spec.name}'")
-  end
-  remove_gemspec
-end
-
-desc "install a gem"
-task :install do
-  pkg = Dir.glob(File.join(File.dirname(__FILE__), "pkg", "*.gem"))
-  system("gem install -l '#{pkg}'")
-  remove_gemspec
-end
-
-desc "uninstall and re-install a gem"
-task :reinstall => [:uninstall, :install]
-
-def remove_gemspec
-  gemspec = File.join(File.dirname(__FILE__), "#{GEM_NAME}.gemspec")
-  FileUtils.rm(gemspec) if File.file?(gemspec)
 end
