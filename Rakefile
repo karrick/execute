@@ -20,6 +20,14 @@ task :perms do
   system(%Q[find '#{bin}' -type f -print0 | xargs -0 -I % chmod 755 '%']) if File.directory?(bin)
 end
 
+desc "uninstall and re-install a gem"
+task :reinstall do
+  name = File.basename(File.dirname(__FILE__))
+  system("gem uninstall '#{name}'")
+  pkg = Dir.glob(File.join(File.dirname(__FILE__), "pkg", "*.gem"))
+  system("gem install -l '#{pkg}'")
+end
+
 # This builds the actual gem. For details of what all these options
 # mean, and other ones you can add, check the documentation here:
 #
