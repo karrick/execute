@@ -1,9 +1,9 @@
 # -*- mode: ruby; compile-command: "cd ~/Development/execute && send pri=cs && echo 'cd /tmp/karrick/execute && rake test' | ssh -Tq pri ssh -Tq cs"; -*-
 
+require File.join(File.dirname(__FILE__), "test_helpers.rb")
 require 'rubygems'
 require 'mocha'
 
-require File.join(File.dirname(__FILE__), "test_helpers.rb")
 require 'execute'
 
 class TestExecute < Test::Unit::TestCase
