@@ -28,6 +28,8 @@ module Execute
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
     raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :timeout, :user].include?(x)}
 
+    options = options.dup
+
     # if user specified then modify command to execute as a different user;
     # must have sudo permissions to do this
     cmd = Execute.change_user(cmd, options.delete(:user))
@@ -73,6 +75,8 @@ module Execute
   def Execute.run! (cmd, options={})
     raise ArgumentError.new("options must be a Hash") unless options.kind_of?(Hash)
     raise ArgumentError.new("invalid option key") unless options.keys.all? {|x| [:debug, :host, :stdin, :emsg, :status, :timeout, :user].include?(x)}
+
+    options = options.dup
 
     # prepare exit status handling
     valid_exit_values = options.delete(:status) || Array(0)

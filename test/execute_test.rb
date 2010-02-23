@@ -40,6 +40,37 @@ class TestExecute < Test::Unit::TestCase
     assert_equal({:status => 0, :stdout => "", :stderr => ""}, Execute.run('pwd', :user => 'degook', :host => 'garble'))
   end
 
+  def test_run_does_not_alter_original_options_hash
+    prepare_mock_objects do
+      original_options = {:user => 'degook', :host => 'garble'}
+      submitted_options = original_options.dup
+      assert_equal({:status => 0, :stdout => "", :stderr => ""}, Execute.run('pwd', original_options))
+      assert_equal(original_options, submitted_options)
+    end
+  end
+
+  def test_run_bang_does_not_alter_original_options_hash
+    prepare_mock_objects do
+      original_options = {:user => 'degook', :host => 'garble', :status => true, :emsg => "test error message"}
+      submitted_options = original_options.dup
+      assert_equal({:status => 0, :stdout => "", :stderr => ""}, Execute.run!('pwd', original_options))
+      assert_equal(original_options, submitted_options)
+    end
+  end
+
+  def prepare_mock_objects (&block)
+    result = mock()
+    result.expects(:exitstatus).returns(0)
+
+    Execute.stubs(:change_user).with('pwd', 'degook').returns('pwd')
+    Execute.stubs(:change_host).with('pwd', 'garble').returns('pwd')
+
+    Open4.expects(:spawn).with('pwd', all_of(has_key(0), has_key(1), has_key(2), has_key(:status),
+                                             Not(any_of(has_key(:user), has_key(:host),
+                                                        has_key(:debug), has_key(:stdin))))).returns(result)
+    yield
+  end
+
   ################
   # STATUS CODE ERROR TESTS
   ################

@@ -1,7 +1,5 @@
 # -*- mode: ruby; compile-command: "cd ~/Development/execute && send pri=cs && echo 'cd /tmp/karrick/execute && rake test' | ssh -Tq pri ssh -Tq cs"; -*-
 
-GEM_NAME = File.basename(File.dirname(__FILE__))
-
 require 'fileutils'
 require "rubygems"
 require "rake/gempackagetask"
@@ -24,8 +22,8 @@ task :default => [:test, :clean, :rdoc, :set_sane_file_permissions, :package]
 spec = Gem::Specification.new do |s|
 
   # Change these as appropriate
-  s.name              = GEM_NAME
-  s.version           = "0.0.9"
+  s.name              = "execute"
+  s.version           = "0.0.10"
   s.summary           = "Execute shell commands on remote hosts"
   s.author            = "Karrick S. McDermott"
   s.email             = "karrick@karrick.net"
@@ -52,7 +50,7 @@ spec = Gem::Specification.new do |s|
 
   # If you want to publish automatically to rubyforge, you'll may need
   # to tweak this, and the publishing task below too.
-  s.rubyforge_project = GEM_NAME
+  s.rubyforge_project = "execute"
 end
 
 # This task actually builds the gem. We also regenerate a static
