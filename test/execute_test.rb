@@ -8,7 +8,7 @@ require 'execute'
 
 class TestExecute < Test::Unit::TestCase
 
-  REMOTE_HOSTS = %w[soma]
+  REMOTE_HOSTS = %w[karrick]
   TEST_CMD = "ls -hlF"
   TEST_TIMEOUT_SECONDS = 5
 
@@ -16,14 +16,14 @@ class TestExecute < Test::Unit::TestCase
     # find a remote host we can use for test logins
     REMOTE_HOSTS.each do |host|
       begin
-        Execute.run!('echo', :host => host, :timeout => 5)
+        Execute.run!('echo', :host => host, :timeout => TEST_TIMEOUT_SECONDS)
         @remote_host = host
         break
       rescue
         retry                   # with next host in list
       end
     end
-    @remote_user = 'e3'
+    @remote_user = 'karrick'
   end
 
   def test_run_removes_its_keys_from_options_hash
