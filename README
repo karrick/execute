@@ -1,6 +1,6 @@
 Execute library allows invoking command line programs.
 
-* takes either a String or Array of Strings specifying commands to execute.
+* command must be a String.
 
 * optionally takes hash with host key, specifying host to execute command on, using SSH.
 
@@ -17,5 +17,3 @@ Execute library allows invoking command line programs.
 * run! <-- throws exception if fail
 
 TODO
-
-* possible bug execute.rb line 65 when raising new RuntimeError (cannot converl nil to String).
