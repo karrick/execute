@@ -8,7 +8,7 @@ require 'execute'
 
 class TestExecute < Test::Unit::TestCase
 
-  REMOTE_HOSTS = %w[some_host]
+  REMOTE_HOSTS = %w[karrick]
   TEST_CMD = "ls -hlF"
   TEST_TIMEOUT_SECONDS = 5
 
@@ -23,7 +23,7 @@ class TestExecute < Test::Unit::TestCase
         retry                   # with next host in list
       end
     end
-    @remote_user = 'some_user'
+    @remote_user = 'karrick'
   end
 
   def test_run_removes_its_keys_from_options_hash
