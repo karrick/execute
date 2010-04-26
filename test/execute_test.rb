@@ -216,4 +216,8 @@ class TestExecute < Test::Unit::TestCase
                  Execute.get_env_val(host, 'USER'),
                  "failed to get remote ENV value")
   end
+
+  def _test_host_hopping
+    assert_equal("coppersmith.skarven.net", Execute.run!("hostname", :host => ["pri", "cs"]))
+  end
 end
