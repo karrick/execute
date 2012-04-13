@@ -1,3 +1,12 @@
+DEPRECATED
+DEPRECATED
+
+Please see the 'Shex' gem for a much more advanced and user-friendly version of this library.
+
+DEPRECATED
+DEPRECATED
+
+
 Execute library allows invoking command line programs.
 
 * command must be a String.
